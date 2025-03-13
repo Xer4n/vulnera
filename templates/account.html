@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+            <h1 class="text-3xl font-bold text-center">{{ user.username }}'s Account</h1>
+
+            <!-- Account Info Section -->
+            <div class="mt-6">
+                <p class="text-lg"><strong>Username:</strong> {{ user.username }}</p>
+            </div>
+
+            <!-- Button to Edit Account (Optional) -->
+            <div class="mt-6 text-center">
+                <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Edit Account</a>
+            </div>
+
+            <!-- Logout Button -->
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('logout') }}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</a>
+            </div>
+
+            <div class="mt-6 text-center">
+                <a href="{{ url_for('home') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Go Back to Dashboard</a>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

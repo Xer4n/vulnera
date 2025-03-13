@@ -46,6 +46,7 @@ def login():
 
         if user:
             #Using session cookies
+            session["userid"] = user[0]
             session["username"] = username
             session["logged_in"] = True
             session["is_admin"] = bool(user[3])
@@ -93,6 +94,7 @@ def home():
         return redirect(url_for("login"))
     
 
+    userid = session.get("userid")
     username = session.get("username", "Guest")
     is_admin = session.get("is_admin", False)
 
@@ -106,7 +108,28 @@ def home():
     products = cursor.fetchall()
     conn.close()
 
-    return render_template("shop.html", username=username, products=products, is_admin=is_admin)
+    return render_template("shop.html", userid=userid, username=username, products=products, is_admin=is_admin)
+
+
+@app.route("/account/<int:userid>")
+def account(userid):
+
+    print(userid)
+
+    if "username" not in session:
+        return redirect(url_for("login"))\
+
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    user = cursor.execute("SELECT * FROM users WHERE id = ?", (int(userid),)).fetchone()
+    conn.close()
+
+    if user:
+        return render_template("account.html", user=user)
+    return redirect(url_for("home"))
+
+
+
 
 
 @app.route("/delete/<int:product_id>", methods=["POST"])

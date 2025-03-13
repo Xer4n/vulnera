@@ -35,12 +35,13 @@
     <nav class="bg-blue-600 p-4 shadow-md text-white">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold">Shop | Vulnera </h1>
-            <div>
-                <span class="mr-4">Welcome, <strong>{{ username }}</strong>!</span>
-                <a href="{{ url_for('logout') }}" class="bg-red-500 px-4 py-2 rounded hover:bg-red-700 transition">
-                    Logout
-                </a>
-            </div>
+            {% if username %}
+                <a href="{{ url_for('account', userid=userid) }}" class="text-blue-500 hover:text-blue-700">
+                    {{ username }}
+                </a> 
+            {% else %}
+                <a href="{{ url_for('login') }}" class="text-blue-500 hover:text-blue-700">Login</a>
+            {% endif %}
         </div>
     </nav>
 
