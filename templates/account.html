@@ -16,9 +16,8 @@
                 <p class="text-lg"><strong>Username:</strong> {{ user.username }}</p>
             </div>
 
-            <!-- Button to Edit Account (Optional) -->
             <div class="mt-6 text-center">
-                <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Edit Account</a>
+                <a href="{{ url_for('change_pass', userid=user.id)}}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Change password</a>
             </div>
 
             <!-- Logout Button -->
@@ -27,7 +26,7 @@
             </div>
 
             <div class="mt-6 text-center">
-                <a href="{{ url_for('home') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Go Back to Dashboard</a>
+                <a href="{{ url_for('home') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Back to Shop</a>
             </div>
 
         </div>

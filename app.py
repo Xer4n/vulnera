@@ -12,7 +12,7 @@ app.secret_key = "test" # needed for flash
 database_file = "users.db"
 
 
-database.add_product("test", "100eur", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
+#database.add_product("test", "100eur", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
 
 
 # Set up session configurations
@@ -114,10 +114,9 @@ def home():
 @app.route("/account/<int:userid>")
 def account(userid):
 
-    print(userid)
-
-    if "username" not in session:
-        return redirect(url_for("login"))\
+    session_uid = session.get('userid')
+    if int(userid) != session_uid and session.get("logged_in"):
+        return redirect(url_for("home"))
 
     conn = database.get_db_connection()
     cursor = conn.cursor()
@@ -158,6 +157,36 @@ def product_page(product_id):
         return render_template('product.html', product=product)
     else:
         return render_template('404.html'), 404
+
+@app.route("/changepass/<int:userid>", methods=["GET", "POST"])
+def change_pass(userid):
+
+    if userid != session.get("userid") or not session.get("logged_in"):
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for("logout"))
+    
+    if request.method == "POST":
+        curr_pass = request.form.get("current_password")
+        new_pass = request.form.get("new_password")
+        
+        valid = database.change_password(userid, curr_password=curr_pass, new_password=new_pass)
+
+
+        if valid:
+            flash("Password changed, please log in.", "success")
+            session.clear()
+            return redirect(url_for("login"))
+            
+    
+        flash("Wrong password", "danger")
+        return redirect(url_for("account", userid=userid))
+    
+
+    return render_template("change_password.html", userid=userid)
+
+    
+
+
 
 @app.route("/logout")
 def logout():

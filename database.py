@@ -86,6 +86,7 @@ def get_product_by_id(product_id):
         conn.close()
 
 def delete_product(product_id):
+    """Delete product by the product ID"""
     try:
         conn = sqlite3.connect('users.db')
         cursor = conn.cursor()
@@ -104,3 +105,36 @@ def delete_product(product_id):
         return False
     finally:
         conn.close()
+
+def change_password(userid, curr_password, new_password):
+    """Change the password of a user by providing userid and current password and the new"""
+    h = hashlib.new("sha256")
+    
+    curr_hash = h.update(curr_password.encode())
+    curr_hash = h.hexdigest()
+
+    h = hashlib.new("sha256")
+
+    new_pass_hash = h.update(new_password.encode())
+    new_pass_hash = h.hexdigest()
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    user = cursor.execute("SELECT * FROM users password WHERE id = ?", (userid,)).fetchone()
+    old_hash = user[2]
+    print(old_hash, curr_hash)
+
+    if old_hash != curr_hash:
+        print(old_hash, curr_hash)
+        conn.close()
+        return False
+    else:
+        print(f"DEBUG: Password for user {userid} changed to {new_pass_hash}")
+        cursor.execute("UPDATE users SET password = ? WHERE id = ?", (new_pass_hash, userid,))
+        conn.commit()
+
+    conn.close() 
+    return True
+    
+
