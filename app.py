@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import sqlite3
-import os
+import platform
+import subprocess
 import hashlib
 import database
 
@@ -47,7 +48,7 @@ def login():
         if user:
             #Using session cookies
             session["userid"] = user[0]
-            session["username"] = username
+            session["username"] = user[1]
             session["logged_in"] = True
             session["is_admin"] = bool(user[3])
             flash(f"Login successfull for user: {user[1]}", "success")
@@ -115,8 +116,13 @@ def home():
 def account(userid):
 
     session_uid = session.get('userid')
+    is_admin = session.get('is_admin', False)
     if int(userid) != session_uid and session.get("logged_in"):
-        return redirect(url_for("home"))
+        if is_admin:
+            pass
+        else:
+            return redirect(url_for("home"))
+    
 
     conn = database.get_db_connection()
     cursor = conn.cursor()
@@ -161,9 +167,13 @@ def product_page(product_id):
 @app.route("/changepass/<int:userid>", methods=["GET", "POST"])
 def change_pass(userid):
 
+    is_admin = session.get("is_admin", False)
     if userid != session.get("userid") or not session.get("logged_in"):
-        flash("Unauthorized access!", "danger")
-        return redirect(url_for("logout"))
+        if is_admin:
+            pass
+        else:
+            flash("Unauthorized access!", "danger")
+            return redirect(url_for("logout"))
     
     if request.method == "POST":
         curr_pass = request.form.get("current_password")
@@ -198,5 +208,28 @@ def logout():
     flash("Logged out")
     return redirect(url_for("login"))
 
-if __name__ == "__main__":
+
+@app.route("/ping", methods=["GET", "POST"])
+def ping():
+    if request.method == "POST":
+        target = request.form.get("target")
+
+
+        #Detect the Operating system to determine the ping
+        if platform.system() == "Windows":
+            cmd = f"ping -n 4 {target}"
+        else:
+            cmd = f"ping -c 4 {target}"
+
+        print(cmd)
+
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = process.communicate()
+        return render_template("ping.html", output=output.decode() if output else error.decode())
+    
+    return render_template("ping.html", output="")
+
+
+
+if __name__ == '__main__':
     app.run(debug=True)
