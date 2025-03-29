@@ -42,7 +42,7 @@
                     {{ username }}
                 </a>
 
-                <a href="{{ url_for('cart') }}" class="bg-blue-500 px-3 py-2 text-white">🛒 Cart ({{ session.get("cart")|length or 0 }})</a>
+                <a href="{{ url_for('cart') }}" class="bg-blue-500 px-3 py-2 text-white">🛒 Cart</a>
             
                 <!-- Logout Button -->
                 <a href="{{ url_for('logout') }}" 
