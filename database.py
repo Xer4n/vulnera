@@ -35,6 +35,18 @@ def initialize_db():
         )
     """)
 
+    #Create the comment table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS comments (
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   product_id INTEGER NOT NULL,
+                   user TEXT NOT NULL,
+                   comment TEXT NOT NULL,
+                   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                   FOREIGN KEY (product_id) REFERENCES products(id)
+                   )
+    """)
+
     # Insert an admin user if not exists
     cursor.execute("SELECT * FROM users WHERE username = ?", ("admin",))
     if not cursor.fetchone():
@@ -106,35 +118,66 @@ def delete_product(product_id):
     finally:
         conn.close()
 
-def change_password(userid, curr_password, new_password):
-    """Change the password of a user by providing userid and current password and the new"""
+def change_password(userid, conf_password, new_password):
+    """Change password of a user"""
     h = hashlib.new("sha256")
-    
-    curr_hash = h.update(curr_password.encode())
-    curr_hash = h.hexdigest()
+    pass_hash = ""
 
-    h = hashlib.new("sha256")
-
-    new_pass_hash = h.update(new_password.encode())
-    new_pass_hash = h.hexdigest()
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    user = cursor.execute("SELECT * FROM users password WHERE id = ?", (userid,)).fetchone()
-    old_hash = user[2]
-    print(old_hash, curr_hash)
 
-    if old_hash != curr_hash:
-        print(old_hash, curr_hash)
+    if new_password != conf_password:
         conn.close()
         return False
     else:
-        print(f"DEBUG: Password for user {userid} changed to {new_pass_hash}")
-        cursor.execute("UPDATE users SET password = ? WHERE id = ?", (new_pass_hash, userid,))
+
+        pass_hash = h.update(new_password.encode())
+        pass_hash = h.hexdigest()
+        print(f"DEBUG: Password for user {userid} changed to {pass_hash}")
+        cursor.execute("UPDATE users SET password = ? WHERE id = ?", (pass_hash, userid,))
         conn.commit()
 
     conn.close() 
     return True
+
+
+def add_comment(product_id, user, comment):
+    """Add a comment to a product"""
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("INSERT INTO comments (product_id, user, comment) VALUES (?, ?, ?)", (product_id, user, comment))
+
+    conn.commit()
+    conn.close()
+
+def get_comments(product_id):
+    """Get all comments for a product"""
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT user, comment, timestamp, id FROM comments WHERE product_id = ? ORDER BY timestamp DESC", (product_id,))
+
+    comments = cursor.fetchall()
+
+    conn.close()
+    return comments
+
+def delete_comment(comment_id):
+
+    print("Deleting comment: ", comment_id)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE from comments WHERE id = ?", (comment_id,))
+
+    conn.commit()
+    conn.close()
+    
+
     
 

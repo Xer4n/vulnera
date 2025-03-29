@@ -6,6 +6,22 @@
     <title>{{ product.name }} - Product Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<script>
+    function deleteComment(commentId) {
+
+        fetch(`/delete_comment/${commentId}`, { method: "POST" })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh page after deletion
+                } else {
+                    alert("Error deleting comment");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+    }
+</script>
+
 <body class="bg-gray-100">
     <div class="container mx-auto p-8">
         <div class="max-w-5xl mx-auto bg-white p-6 rounded shadow flex flex-col md:flex-row">
@@ -27,6 +43,7 @@
                 </div>
             </div>
 
+
             <div class="md:w-1/2 mt-6 md:mt-0">
                 {% if product.image %}
                     <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}" class="w-full h-auto rounded shadow-lg">
@@ -34,7 +51,39 @@
                     <p class="text-gray-500">No image available.</p>
                 {% endif %}
             </div>
+
+            
+        </div>
+
+        <div class="max-w-2xl mx-auto mt-6">
+            <h2 class="text-xl font-semibold">Comments</h2>
+        
+            <div class="mt-4">
+                {% for comment in comments %}
+                    <div class="bg-gray-100 p-3 rounded mb-2 flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-700"><strong>{{ comment[0] }}</strong> ({{ comment[2] }})</p>
+                            <p class="text-gray-800">{{ comment[1] | safe }}</p>
+                        </div>
+                        {% if session.get("username") == comment[0] or session.get("is_admin") %}
+                            <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                    onclick="deleteComment({{ comment[3] }})">
+                                Delete
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        
+            <!-- Comment Form -->
+            <form method="POST" class="mt-4">
+                <textarea name="comment" class="w-full p-2 border rounded" placeholder="Leave a comment..." required></textarea>
+                <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Submit Comment
+                </button>
+            </form>
         </div>
     </div>
+
 </body>
 </html>

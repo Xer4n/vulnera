@@ -78,10 +78,10 @@ def register():
         try:
             cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, pass_hash))
             conn.commit()
-            flash(f"User {username} registered. Please log in.", "success")
+            flash(f"User: {username}, registered. Please log in.", "success")
             return redirect(url_for("login"))
         except sqlite3.IntegrityError:
-            flash("Username already registerd!", "danger")
+            flash("Username already registerd, please log in.", "danger")
         finally:
             conn.close()
         
@@ -137,9 +137,9 @@ def account(userid):
 
 
 
-@app.route("/delete/<int:product_id>", methods=["POST"])
+@app.route("/delete/<int:product_id>", methods=["GET", "POST"])
 def delete_product(product_id):
-     
+
     if "logged_in" not in session or not session.get("is_admin"):
         return jsonify({"error": "Unauthorized"}), 403
 
@@ -154,15 +154,35 @@ def delete_product(product_id):
 
 
 
-@app.route("/product/<int:product_id>")
+@app.route("/product/<int:product_id>", methods=["GET", "POST"])
 def product_page(product_id):
 
-    product = database.get_product_by_id(product_id)
+    product = database.get_product_by_id(product_id=product_id)
+    comments = database.get_comments(product_id=product_id)
+
+
+    if request.method == "POST":
+        user = session.get("username", "Guest")#User should be logged in, just in case there is a guest
+        comment = request.form.get("comment")
+
+        if comment:
+            database.add_comment(product_id=product_id, user=user, comment=comment)
+            flash("Comment added!", "success")
+            return redirect(url_for("product_page", product_id=product_id))
 
     if product:
-        return render_template('product.html', product=product)
+        return render_template('product.html', product=product, comments=comments)
     else:
         return render_template('404.html'), 404
+    
+@app.route("/delete_comment/<int:comment_id>", methods=["POST"])
+def delete_comment(comment_id):
+    if "username" not in session:
+        return jsonify({"Error":"Unauthorized"}), 403
+    
+    database.delete_comment(comment_id=comment_id)
+    return jsonify({"success": True})
+
 
 @app.route("/changepass/<int:userid>", methods=["GET", "POST"])
 def change_pass(userid):
@@ -176,19 +196,25 @@ def change_pass(userid):
             return redirect(url_for("logout"))
     
     if request.method == "POST":
-        curr_pass = request.form.get("current_password")
+        conf_pass = request.form.get("conf_password")
         new_pass = request.form.get("new_password")
         
-        valid = database.change_password(userid, curr_password=curr_pass, new_password=new_pass)
+        valid = database.change_password(userid, conf_password=conf_pass, new_password=new_pass)
 
 
         if valid:
             flash("Password changed, please log in.", "success")
+
+            flashes = session.get('_flashes')
             session.clear()
+
+            if flashes:
+                session['_flashes'] = flashes
+
             return redirect(url_for("login"))
             
     
-        flash("Wrong password", "danger")
+        flash("Passwords, do not match", "danger")
         return redirect(url_for("account", userid=userid))
     
 
@@ -229,7 +255,44 @@ def ping():
     
     return render_template("ping.html", output="")
 
+@app.route("/add_to_cart/<int:product_id>", methods=["POST"])
+def add_to_cart(product_id):
 
+    if "cart" not in session:
+        session["cart"] = []
+
+
+    product = database.get_product_by_id(product_id=product_id)
+
+    
+    if product:
+        session["cart"].append({"id": product["id"], "name": product["name"], "price": product["price"]})
+        session.modified = True
+        flash(f"Added {product['name']} to the cart!", "success")
+
+    return redirect(request.referrer)
+
+@app.route("/cart")
+def cart():
+    cart_items = session.get("cart", [])
+    total_price = 0
+
+    for item in cart_items:
+        if "eur" in item["price"]:
+            price = int(item["price"].replace("eur", ""))
+            total_price += price
+
+    return render_template("cart.html", cart=cart_items, total=total_price)
+
+@app.route("/remove_from_cart/<int:product_id>")
+def remove_from_cart(product_id):
+
+    if "cart" in session:
+        session["cart"] = [item for item in session["cart"] if item["id"] != product_id]
+        session.modified = True
+        flash("Item removed from your cart!", "info")
+
+    return redirect(url_for("cart"))
 
 if __name__ == '__main__':
     app.run(debug=True)
