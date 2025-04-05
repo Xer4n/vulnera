@@ -20,7 +20,9 @@ def initialize_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            is_admin BOOLEAN NOT NULL DEFAULT 0
+            is_admin BOOLEAN NOT NULL DEFAULT 0,
+            balance INTEGER NOT NULL DEFAULT 300
+            
         )
     """)
 
@@ -60,6 +62,35 @@ def initialize_db():
     conn.commit()
     conn.close()
 
+
+def set_balance(id, balance):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+   
+    print(f"Balance for user {id} set to {balance}")
+    cursor.execute("UPDATE users SET balance = ? WHERE id = ?", (balance, id,))
+    conn.commit()
+    conn.close()
+
+
+
+def get_balance(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    #Get current balance
+    cursor.execute("SELECT balance FROM users WHERE id = ?", (id,))
+    current_balance = cursor.fetchone()
+    current_balance = current_balance[0]
+
+    if current_balance < 0:
+        current_balance = 0
+        set_balance(id, current_balance)
+
+    
+    print(f"DEBUG: Balance for user {id}: {current_balance}")
+    return current_balance
 
 def add_product(name, price, image, desc):
     """Add a new product to the database."""

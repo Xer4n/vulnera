@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold mb-4">🛍 Checkout</h1>
+
+        <p class="text-lg">Current Balance: <strong>{{ balance }} euro</strong></p>
+        <p class="text-lg">Total Price: <strong>{{ total_price }} euro</strong></p>
+        <p class="text-lg">Estimated time of delivery: <strong>never</strong></p>
+
+        {% if total_price > balance %}
+            <p class="text-red-500">⚠️ Not enough balance to complete the purchase!</p>
+        {% endif %}
+
+        <form method="POST">
+            {% if total_price <= balance %}
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-4">
+                    Confirm Purchase
+                </button>
+            {% endif %}
+        </form>
+
+        <a href="{{ url_for('cart') }}" class="text-blue-500 mt-4 block">← Back to Cart</a>
+    </div>
+
+</body>
+</html>

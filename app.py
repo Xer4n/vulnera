@@ -15,7 +15,6 @@ database_file = "users.db"
 
 #database.add_product("test", "100eur", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
 
-
 # Set up session configurations
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
@@ -76,12 +75,12 @@ def register():
         pass_hash = h.hexdigest()
 
         try:
-            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, pass_hash))
+            cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, pass_hash, 300))
             conn.commit()
             flash(f"User: {username}, registered. Please log in.", "success")
             return redirect(url_for("login"))
         except sqlite3.IntegrityError:
-            flash("Username already registerd, please log in.", "danger")
+            flash("Something went wrong, please try again!", "danger")
         finally:
             conn.close()
         
@@ -122,19 +121,62 @@ def account(userid):
             pass
         else:
             return redirect(url_for("home"))
-    
+        
 
     conn = database.get_db_connection()
     cursor = conn.cursor()
     user = cursor.execute("SELECT * FROM users WHERE id = ?", (int(userid),)).fetchone()
-    conn.close()
+    
 
     if user:
         return render_template("account.html", user=user)
     return redirect(url_for("home"))
 
 
+@app.route("/account/<int:userid>/addbalance", methods=["GET", "POST"])
+def add_balance(userid):
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
 
+    if request.method == "POST":
+        code = request.form.get("code", "").strip().lower()
+
+
+        #TODO: Move this to a database before finishing. Also add ways for admin to add codes to the db
+        active_codes = {
+
+            "vulnera":1000,
+            "sqli":200,
+            "xss":400,
+            "csrf":400,
+
+        }
+
+        if code in active_codes:
+            amount = int(active_codes[code])
+            cursor.execute("UPDATE users SET balance = balance + ? WHERE id = ?", (amount,userid))
+            conn.commit()
+            flash(f"{amount} added to your account!", "success")
+
+        else:
+            flash("Invalid code, try again.", "danger")
+        
+
+    #Fetch user
+    cursor.execute("SELECT username, balance FROM users WHERE id = ?", (userid,))
+    user = cursor.fetchone()
+    conn.close()
+
+
+    if user:
+        username, balance = user
+        return render_template("addbalance.html", username=username, userid=userid, balance=balance)
+    else:
+        flash("User not found", "danger")
+        return redirect(url_for("login"))
 
 
 @app.route("/delete/<int:product_id>", methods=["GET", "POST"])
@@ -293,6 +335,47 @@ def remove_from_cart(product_id):
         flash("Item removed from your cart!", "info")
 
     return redirect(url_for("cart"))
+
+@app.route("/checkout", methods=["GET", "POST"])
+def checkout():
+    
+    #Check that user is logged in.
+    if "username" not in session:
+        flash("Please log in", "danger")
+        return redirect(url_for("login"))
+    
+    #user balance
+    usr_balance = database.get_balance(session["userid"])
+    print(usr_balance)
+
+    cart_items = session.get("cart", [])
+    total_price = 0
+
+
+    for item in cart_items:
+        if "eur" in item["price"]:
+            price = int(item["price"].replace("eur", ""))
+            total_price += price
+
+    
+
+    if request.method == "POST":
+        if total_price > usr_balance:
+            flash("User does not have enough balance to complete the purchase")
+        else:
+            new_balance = usr_balance - total_price
+            print(new_balance)
+            database.set_balance(session["userid"], new_balance)
+            
+            session["cart"] =  []
+
+            flash("Checkout complete! Thanks for your purchase!", "success")
+
+    
+        return redirect(url_for("home"))
+    
+    return render_template("checkout.html", cart=cart_items, total_price=total_price, balance=usr_balance)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
