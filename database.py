@@ -65,7 +65,20 @@ def initialize_db():
     conn.close()
 
 
+def get_all_users():
+    '''Get all usernames, their balance and id registered in the database'''
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, username, balance FROM users")
+    users = cursor.fetchall()
+
+    conn.close()
+
+    return users
+
 def set_balance(id, balance):
+    '''Set the balance of a user given the id'''
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -78,6 +91,7 @@ def set_balance(id, balance):
 
 
 def get_balance(id):
+    '''Get the balance of a user given the id'''
     conn = get_db_connection()
     cursor = conn.cursor()
 

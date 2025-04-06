@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import sqlite3
 import platform
-import subprocess
+import os
 import hashlib
 import database
 import random
@@ -155,7 +155,7 @@ def add_balance(userid):
 
 
         if user_token != session.get("csrf_token"):
-            flash(f"Invalid CSRF token!", "danger")
+            flash(f"Invalid CSRF token detected!", "danger")
             return redirect(url_for("login"))
 
 
@@ -313,33 +313,6 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/ping", methods=["GET", "POST"])
-def ping():
-    if request.method == "POST":
-
-        user_token = request.form.get("csrf_token")
-
-        if user_token != session.get("csrf_token"):
-            flash(f"Invalid CSRF token!", "danger")
-            return redirect(url_for("login"))
-
-        target = request.form.get("target")
-
-
-        #Detect the Operating system to determine the ping
-        if platform.system() == "Windows":
-            cmd = f"ping -n 4 {target}"
-        else:
-            cmd = f"ping -c 4 {target}"
-
-        print(cmd)
-
-        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
-        return render_template("ping.html", output=output.decode() if output else error.decode())
-    
-    return render_template("ping.html", output="")
-
 @app.route("/add_to_cart/<int:product_id>", methods=["POST"])
 def add_to_cart(product_id):
 
@@ -426,6 +399,33 @@ def checkout():
         return redirect(url_for("home"))
     
     return render_template("checkout.html", cart=cart_items, total_price=total_price, balance=usr_balance)
+
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    if not session.get("is_admin"):
+        flash("Access denied")
+        return redirect("/")
+    
+    users = database.get_all_users()
+
+    output = ""
+
+    if request.method == "POST":
+        if "ping" in request.form:
+            target = request.form.get("target")
+
+            try:
+                if platform == "Windows":
+                    output = os.popen(f"ping -c 2 {target}").read()
+                else: #unix systems
+                    output = os.popen(f"ping -n 2 {target}").read()
+            except:
+                output = "Failed."
+    
+
+    return render_template("admin.html", users=users, output=output)
+    
 
 
 if __name__ == '__main__':
