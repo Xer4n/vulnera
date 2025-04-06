@@ -1,6 +1,8 @@
 import sqlite3
 import hashlib
 
+#TODO: Want to move this to PostGreSQL, better for complex exploitation.
+
 DB_NAME = "users.db"
 
 def get_db_connection():

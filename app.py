@@ -4,6 +4,7 @@ import platform
 import subprocess
 import hashlib
 import database
+import random
 
 h = hashlib.new('sha256')
 
@@ -50,6 +51,12 @@ def login():
             session["username"] = user[1]
             session["logged_in"] = True
             session["is_admin"] = bool(user[3])
+
+            #Weak CSRF token implementation
+
+            session["csrf_token"] = f"static-token-{random.randint(100,999)}"
+
+
             flash(f"Login successfull for user: {user[1]}", "success")
             return redirect(url_for("home"))
         else:
@@ -64,6 +71,7 @@ def register():
     h = hashlib.new('sha256')
     
     if request.method == "POST":
+    
         username = request.form.get("username")
         password = request.form.get("password")
         
@@ -142,6 +150,15 @@ def add_balance(userid):
     cursor = conn.cursor()
 
     if request.method == "POST":
+
+        user_token = request.form.get("csrf_token")
+
+
+        if user_token != session.get("csrf_token"):
+            flash(f"Invalid CSRF token!", "danger")
+            return redirect(url_for("login"))
+
+
         code = request.form.get("code", "").strip().lower()
 
 
@@ -204,6 +221,16 @@ def product_page(product_id):
 
 
     if request.method == "POST":
+
+        user_token = request.form.get("csrf_token")
+
+
+        if user_token != session.get("csrf_token"):
+            flash(f"Invalid CSRF token!", "danger")
+            return redirect(url_for("login"))
+
+
+
         user = session.get("username", "Guest")#User should be logged in, just in case there is a guest
         comment = request.form.get("comment")
 
@@ -219,6 +246,7 @@ def product_page(product_id):
     
 @app.route("/delete_comment/<int:comment_id>", methods=["POST"])
 def delete_comment(comment_id):
+
     if "username" not in session:
         return jsonify({"Error":"Unauthorized"}), 403
     
@@ -238,6 +266,14 @@ def change_pass(userid):
             return redirect(url_for("logout"))
     
     if request.method == "POST":
+
+        user_token = request.form.get("csrf_token")
+
+        if user_token != session.get("csrf_token"):
+            flash(f"Invalid CSRF token!", "danger")
+            return redirect(url_for("login"))
+
+
         conf_pass = request.form.get("conf_password")
         new_pass = request.form.get("new_password")
         
@@ -280,6 +316,13 @@ def logout():
 @app.route("/ping", methods=["GET", "POST"])
 def ping():
     if request.method == "POST":
+
+        user_token = request.form.get("csrf_token")
+
+        if user_token != session.get("csrf_token"):
+            flash(f"Invalid CSRF token!", "danger")
+            return redirect(url_for("login"))
+
         target = request.form.get("target")
 
 
@@ -299,6 +342,7 @@ def ping():
 
 @app.route("/add_to_cart/<int:product_id>", methods=["POST"])
 def add_to_cart(product_id):
+
 
     if "cart" not in session:
         session["cart"] = []
@@ -360,6 +404,13 @@ def checkout():
     
 
     if request.method == "POST":
+
+        user_token = request.form.get("csrf_token")
+
+        if user_token != session.get("csrf_token"):
+            flash(f"Invalid CSRF token!", "danger")
+            return redirect(url_for("login"))
+
         if total_price > usr_balance:
             flash("User does not have enough balance to complete the purchase")
         else:
