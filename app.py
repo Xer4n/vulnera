@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 import sqlite3
 import platform
 import os
@@ -6,10 +6,12 @@ import hashlib
 import database
 import random
 
+
 h = hashlib.new('sha256')
 
 app = Flask(__name__)
 app.secret_key = "test" # needed for flash
+
 
 database_file = "users.db"
 
@@ -55,7 +57,7 @@ def login():
 
             #Weak CSRF token implementation
 
-            session["csrf_token"] = f"static-token-{random.randint(100,999)}"
+            session["csrf_token"] = f"static-token-{random.randint(100,199)}" #FIXME: CHANGED FOR TESTING
 
 
             flash(f"Login successfull for user: {user[1]}", "success")
@@ -230,6 +232,7 @@ def product_page(product_id):
 
 
         if user_token != session.get("csrf_token"):
+            session.pop('_flashes', None)
             flash(f"Invalid CSRF token!", "danger")
             return redirect(url_for("login"))
 
@@ -271,15 +274,22 @@ def change_pass(userid):
     
     if request.method == "POST":
 
+        print(f"DEBUG: Request to change password for user with id: {userid}")
+
         user_token = request.form.get("csrf_token")
 
+        print(f"token: {user_token}")
+
         if user_token != session.get("csrf_token"):
+            session.pop('_flashes', None)
             flash(f"Invalid CSRF token!", "danger")
             return redirect(url_for("login"))
 
 
         conf_pass = request.form.get("conf_password")
         new_pass = request.form.get("new_password")
+
+        print(f"Request details:  {user_token}, {new_pass}, {conf_pass}")
         
         valid = database.change_password(userid, conf_password=conf_pass, new_password=new_pass)
 
@@ -335,17 +345,40 @@ def add_to_cart(product_id):
 
     return redirect(request.referrer)
 
-@app.route("/cart")
+@app.route("/cart", methods=["GET", "POST"])
 def cart():
     cart_items = session.get("cart", [])
     total_price = 0
+    discount = 0
+    percentage = 0
+
+
 
     for item in cart_items:
         if "eur" in item["price"]:
             price = int(item["price"].replace("eur", ""))
             total_price += price
 
-    return render_template("cart.html", cart=cart_items, total=total_price)
+    if "total" not in session:
+        session["total"] = total_price
+
+
+    if request.method == "POST":
+        total_price = session["total"]
+        promo_code = request.form.get("promo_code")
+
+        if promo_code == "10OFF":
+            discount += total_price * 0.1
+            percentage = 10
+
+    final_total = total_price - discount
+
+
+    session["total"] = final_total
+
+    session.modified = True
+
+    return render_template("cart.html", cart=cart_items, total=final_total, discount=percentage)
 
 @app.route("/remove_from_cart/<int:product_id>")
 def remove_from_cart(product_id):
@@ -369,13 +402,8 @@ def checkout():
     usr_balance = database.get_balance(session["userid"])
 
     cart_items = session.get("cart", [])
-    total_price = 0
+    total_price = session.get("total")
 
-
-    for item in cart_items:
-        if "eur" in item["price"]:
-            price = int(item["price"].replace("eur", ""))
-            total_price += price
 
     
 
@@ -384,6 +412,7 @@ def checkout():
         user_token = request.form.get("csrf_token")
 
         if user_token != session.get("csrf_token"):
+            session.pop('_flashes', None)
             flash(f"Invalid CSRF token!", "danger")
             return redirect(url_for("login"))
 
@@ -443,7 +472,12 @@ def delete_user(userid):
 
     return redirect(url_for("admin"))
 
-    
+
+@app.route("/demoattacks/<path:filename>")
+def demoattacks(filename):
+    return send_from_directory("demoattacks", filename)
+
+
 
 
 if __name__ == '__main__':

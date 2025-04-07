@@ -22,10 +22,25 @@
                 </li>
                 {% endfor %}
             </ul>
-            <p class="text-lg font-semibold mt-4">Total: {{ total }} Euro</p>
+
+            <form action="{{ url_for('cart') }}" method="POST">
+                <div class="flex justify-between mb-4">
+                  <label for="promo_code" class="text-lg font-medium">Promo Code:</label>
+                  <input type="text" id="promo_code" name="promo_code" class="border border-gray-300 p-2 rounded" placeholder="Enter promo code" required>
+                  <button type="submit" class="bg-blue-500 text-white p-2 rounded ml-2">Apply</button>
+                </div>
+              </form>
+
+
+            <p class="text-lg">Discount: <strong>{{ discount if discount else '0' }}%</strong></p>  
+            <p class="text-lg font-semibold mt-4">Total: {{ total }} Vulnera coins</p>
+
+
         {% else %}
             <p class="text-gray-600">Your cart is empty.</p>
         {% endif %}
+
+        
 
         <div class="mt-6 flex justify-between">
             <a href="{{ url_for('home') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">

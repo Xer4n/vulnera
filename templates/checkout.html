@@ -11,12 +11,12 @@
     <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <h1 class="text-2xl font-bold mb-4">🛍 Checkout</h1>
 
-        <p class="text-lg">Current Balance: <strong>{{ balance }} euro</strong></p>
-        <p class="text-lg">Total Price: <strong>{{ total_price }} euro</strong></p>
+        <p class="text-lg">Current Balance: <strong>{{ balance }} Vulnera coins</strong></p>
+        <p class="text-lg">Total Price: <strong>{{ total_price }} Vulnera coins</strong></p>
         <p class="text-lg">Estimated time of delivery: <strong>never</strong></p>
 
         {% if total_price > balance %}
-            <p class="text-red-500">⚠️ Not enough balance to complete the purchase!</p>
+            <p class="text-red-500"> ❗ Not enough balance to complete the purchase ❗</p>
         {% endif %}
 
         <form method="POST">
