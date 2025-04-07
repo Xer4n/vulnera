@@ -13,6 +13,7 @@ app.secret_key = "test" # needed for flash
 
 database_file = "users.db"
 
+#database.initialize_db()
 
 #database.add_product("test", "100eur", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
 
@@ -143,23 +144,26 @@ def account(userid):
 
 @app.route("/account/<int:userid>/addbalance", methods=["GET", "POST"])
 def add_balance(userid):
-    if "username" not in session:
-        return redirect(url_for("login"))
     
     conn = database.get_db_connection()
     cursor = conn.cursor()
 
+
+
     if request.method == "POST":
 
         user_token = request.form.get("csrf_token")
+        session_token = session.get("csrf_token")
+       
 
-
-        if user_token != session.get("csrf_token"):
+        if user_token != session_token:
             flash(f"Invalid CSRF token detected!", "danger")
             return redirect(url_for("login"))
 
 
         code = request.form.get("code", "").strip().lower()
+
+        print(f"Request by {userid} with code: {code} and token {user_token}")
 
 
         #TODO: Move this to a database before finishing. Also add ways for admin to add codes to the db
@@ -363,7 +367,6 @@ def checkout():
     
     #user balance
     usr_balance = database.get_balance(session["userid"])
-    print(usr_balance)
 
     cart_items = session.get("cart", [])
     total_price = 0
@@ -388,7 +391,6 @@ def checkout():
             flash("User does not have enough balance to complete the purchase")
         else:
             new_balance = usr_balance - total_price
-            print(new_balance)
             database.set_balance(session["userid"], new_balance)
             
             session["cart"] =  []
@@ -425,6 +427,22 @@ def admin():
     
 
     return render_template("admin.html", users=users, output=output)
+    
+@app.route("/delete_user/<int:userid>", methods=["POST"])
+def delete_user(userid):
+    if not session["is_admin"]:
+        flash(f"Access denied")
+        return redirect(url_for("home"))
+
+
+    
+    if database.delete_user(userid) and userid != 1:
+        flash(f"User with id: {userid} has been deleted!", "success")
+    else:
+        flash(f"Error, something went wrong.", "danger")
+
+    return redirect(url_for("admin"))
+
     
 
 

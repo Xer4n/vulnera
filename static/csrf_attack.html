@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CSRF Token Tester</title>
+</head>
+<body>
+  <h1>Testing a Single CSRF Token</h1>
+
+  <form action="http://localhost:5000/account/1/addbalance" method="POST" target="responseFrame">
+    <input type="hidden" name="code" value="xss">
+    <input type="hidden" name="csrf_token" value="static-token-801">
+    <input type="submit" value="Submit Token">
+  </form>
+
+  <br>
+
+  <iframe name="responseFrame" width="100%" height="300px" style="border:1px solid #ccc;"></iframe>
+</body>
+</html>

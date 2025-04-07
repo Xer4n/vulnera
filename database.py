@@ -77,6 +77,24 @@ def get_all_users():
 
     return users
 
+def delete_user(id):
+    """Delete user by id"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM users WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+
+        return True
+    except:
+        print("DEBUG: Error deleting user with id: {id}")
+        return False
+
+
+
+
 def set_balance(id, balance):
     '''Set the balance of a user given the id'''
     conn = get_db_connection()
