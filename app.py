@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, send_file
 import sqlite3
 import platform
 import os
@@ -473,10 +473,17 @@ def delete_user(userid):
     return redirect(url_for("admin"))
 
 
-@app.route("/demoattacks/<path:filename>")
-def demoattacks(filename):
-    return send_from_directory("demoattacks", filename)
+#Directory traversal vulnerability
 
+@app.route('/view')
+def view_file():
+    filename = request.args.get("filename")
+
+    try:
+        return send_file(f"static/{filename}")
+    
+    except Exception as e:
+        return f"Error loading file: {filename}. Error: {str(e)}", 404
 
 
 
