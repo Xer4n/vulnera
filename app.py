@@ -5,6 +5,7 @@ import os
 import hashlib
 import database
 import random
+from math import floor
 
 
 h = hashlib.new('sha256')
@@ -60,7 +61,7 @@ def login():
             session["csrf_token"] = f"static-token-{random.randint(100,199)}" #FIXME: CHANGED FOR TESTING
 
 
-            flash(f"Login successfull for user: {user[1]}", "success")
+            flash(f"Welcome, {user[1]}!", "success")
             return redirect(url_for("home"))
         else:
             flash("Invalid username or password", "danger")
@@ -216,6 +217,39 @@ def delete_product(product_id):
         return jsonify({"success": True, "message": "Product deleted successfully!"}), 200
     else:
         return jsonify({"error": "Error deleting product."}), 500
+    
+
+@app.route("/add_product", methods=["GET", "POST"])
+def add_product():
+    if not session.get("is_admin"):
+        flash("Access denied!", "danger")
+        return redirect(url_for("home"))
+    
+    if request.method == "POST":
+        
+        name = request.form.get("name")
+        desc = request.form.get("desc")
+        price = float(request.form.get("price"))
+
+        #image upload, also File Inclusion vulnerability. The app doesnt check that an image is being uploaded, one can make a reverse shell here.
+        image = request.files['image']
+
+        if image:
+            image_name = image.filename
+            image_path = os.path.join("static/img", image_name)
+            image.save(image_path)
+        else:
+            flash("No image uploaded")
+            image = "#"
+
+        database.add_product(name=name, price=floor(price), image=f"img/{image.filename}", desc=desc)
+
+        flash("Product added successfully")
+        return redirect(url_for("home"))
+    
+    return render_template("addproduct.html")
+
+    
 
 
 
@@ -474,7 +508,6 @@ def delete_user(userid):
 
 
 #Directory traversal vulnerability
-
 @app.route('/view')
 def view_file():
     filename = request.args.get("filename")
