@@ -42,5 +42,25 @@
     </div>
 </div>
 
+
+<div class="fixed bottom-4 left-4">
+  <button
+    onclick="toggleHint()"
+    class="bg-blue-100 text-gray-800 text-sm px-3 py-1 rounded shadow hover:bg-blue-200"
+  >
+  ℹ
+  </button>
+  <div id="sqli-hint" class="mt-2 text-xs text-gray-600 hidden">
+      Codes for valuta can be found in the <code>README.txt</code>
+  </div>
+</div>
+
+<script>
+  function toggleHint() {
+    const hint = document.getElementById('sqli-hint');
+    hint.classList.toggle('hidden');
+  }
+</script>
+
 </body>
 </html>
