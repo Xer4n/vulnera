@@ -484,7 +484,7 @@ def admin():
                 if platform == "Windows":
                     output = os.popen(f"ping -c 2 {target}").read()
                 else: #unix systems
-                    output = os.popen(f"ping -n 2 {target}").read()
+                    output = os.popen(f"ping -c 2 {target}").read()
             except:
                 output = "Failed."
     
