@@ -506,6 +506,7 @@ def delete_user(userid):
 
     return redirect(url_for("admin"))
 
+#This is a test push from the Kali VM
 
 #Directory traversal vulnerability
 @app.route('/view')
