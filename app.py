@@ -26,6 +26,8 @@ app.config["SESSION_TYPE"] = "filesystem"
 
 #database.initialize_db() #calls function from database.py to create the database if it does not exist, if it does then just keep using it
 
+#Git test
+
 #Routing
 @app.route("/", methods=["GET", "POST"])
 def login():
