@@ -37,7 +37,7 @@ def initialize_db():
         CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
-            price DECIMAL(10, 2) NOT NULL,
+            price INT NOT NULL,
             image TEXT NOT NULL,
             description TEXT NOT NULL
         )
@@ -127,7 +127,7 @@ def set_balance(id, balance):
 def get_balance(id):
     '''Get the balance of a user given the id'''
     conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor = conn.cursor()
 
     #Get current balance
     cursor.execute("SELECT balance FROM users WHERE id = %s", (id,))

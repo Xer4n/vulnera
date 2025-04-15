@@ -18,7 +18,7 @@ database_file = "users.db"
 
 database.initialize_db()
 
-#database.add_product("test", "100eur", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
+#database.add_product("test", "100", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
 
 # Set up session configurations
 app.config["SESSION_PERMANENT"] = False
@@ -45,6 +45,7 @@ def login():
         query = f"SELECT * FROM users WHERE username = '{username}' AND password ='{password}'"
         cursor.execute(query)
         user = cursor.fetchone()
+        print(user)
 
         
         conn.close()
@@ -58,7 +59,7 @@ def login():
 
             #Weak CSRF token implementation
 
-            session["csrf_token"] = f"static-token-{random.randint(100,199)}" #FIXME: CHANGED FOR TESTING
+            session["csrf_token"] = f"static-token-{random.randint(100,199)}" #Not very random, brute forcable
 
 
             flash(f"Welcome, {user[1]}!", "success")
@@ -223,7 +224,7 @@ def add_product():
         
         name = request.form.get("name")
         desc = request.form.get("desc")
-        price = float(request.form.get("price"))
+        price = int(request.form.get("price"))
 
         #image upload, also File Inclusion vulnerability. The app doesnt check that an image is being uploaded, one can make a reverse shell here.
         image = request.files['image']
@@ -384,9 +385,9 @@ def cart():
 
 
     for item in cart_items:
-        if "eur" in item["price"]:
-            price = int(item["price"].replace("eur", ""))
-            total_price += price
+        
+        price = float(item["price"].replace("eur", ""))
+        total_price += price
 
     if "total" not in session:
         session["total"] = total_price
@@ -428,7 +429,9 @@ def checkout():
         return redirect(url_for("login"))
     
     #user balance
-    usr_balance = database.get_balance(session["userid"])
+    userid = session["userid"]
+    print(userid)
+    usr_balance = database.get_balance(userid)
 
     cart_items = session.get("cart", [])
     total_price = session.get("total")
@@ -508,11 +511,18 @@ def delete_user(userid):
 def view_file():
     filename = request.args.get("filename")
 
-    try:
-        return send_file(f"static/{filename}")
+
+    if not filename:
+        return "No file specified", 400
+    else:
+        filename = "static/" + filename
     
+    try:
+        with open(filename, "r") as f:
+            content = f.read()
+        return f"<pre>{content}</pre>"
     except Exception as e:
-        return f"Error loading file: {filename}. Error: {str(e)}", 404
+        return f"Error: {e}"
 
 
 
