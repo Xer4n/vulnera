@@ -16,15 +16,15 @@ app.secret_key = "test" # needed for flash
 
 database_file = "users.db"
 
-#database.initialize_db()
+database.initialize_db()
 
-#database.add_product("test", "100eur", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
+#database.add_product("test", "100", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
 
 # Set up session configurations
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
-database.initialize_db() #calls function from database.py to create the database if it does not exist, if it does then just keep using it
+#database.initialize_db() #calls function from database.py to create the database if it does not exist, if it does then just keep using it
 
 #Routing
 @app.route("/", methods=["GET", "POST"])
@@ -45,6 +45,7 @@ def login():
         query = f"SELECT * FROM users WHERE username = '{username}' AND password ='{password}'"
         cursor.execute(query)
         user = cursor.fetchone()
+        print(user)
 
         
         conn.close()
@@ -58,7 +59,7 @@ def login():
 
             #Weak CSRF token implementation
 
-            session["csrf_token"] = f"static-token-{random.randint(100,199)}" #FIXME: CHANGED FOR TESTING
+            session["csrf_token"] = f"static-token-{random.randint(100,199)}" #Not very random, brute forcable
 
 
             flash(f"Welcome, {user[1]}!", "success")
@@ -87,7 +88,7 @@ def register():
         pass_hash = h.hexdigest()
 
         try:
-            cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, pass_hash, 300))
+            cursor.execute("INSERT INTO users (username, password, balance) VALUES (%s, %s, %s)", (username, pass_hash, 300)) #TODO: Move to the DB file
             conn.commit()
             flash(f"User: {username}, registered. Please log in.", "success")
             return redirect(url_for("login"))
@@ -113,12 +114,7 @@ def home():
 
     print("DEBUG:", username, "logged in")
 
-    conn = database.get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM products")
-    products = cursor.fetchall()
-    conn.close()
+    products = database.get_all_products()
 
     return render_template("shop.html", userid=userid, username=username, products=products, is_admin=is_admin)
 
@@ -135,9 +131,8 @@ def account(userid):
             return redirect(url_for("home"))
         
 
-    conn = database.get_db_connection()
-    cursor = conn.cursor()
-    user = cursor.execute("SELECT * FROM users WHERE id = ?", (int(userid),)).fetchone()
+
+    user = database.get_user_by_id(userid)
     
 
     if user:
@@ -181,7 +176,7 @@ def add_balance(userid):
 
         if code in active_codes:
             amount = int(active_codes[code])
-            cursor.execute("UPDATE users SET balance = balance + ? WHERE id = ?", (amount,userid))
+            cursor.execute("UPDATE users SET balance = balance + %s WHERE id = %s", (amount,userid))
             conn.commit()
             flash(f"{amount} added to your account!", "success")
 
@@ -190,7 +185,7 @@ def add_balance(userid):
         
 
     #Fetch user
-    cursor.execute("SELECT username, balance FROM users WHERE id = ?", (userid,))
+    cursor.execute("SELECT username, balance FROM users WHERE id = %s", (userid,))
     user = cursor.fetchone()
     conn.close()
 
@@ -229,7 +224,7 @@ def add_product():
         
         name = request.form.get("name")
         desc = request.form.get("desc")
-        price = float(request.form.get("price"))
+        price = int(request.form.get("price"))
 
         #image upload, also File Inclusion vulnerability. The app doesnt check that an image is being uploaded, one can make a reverse shell here.
         image = request.files['image']
@@ -272,11 +267,10 @@ def product_page(product_id):
 
 
 
-        user = session.get("username", "Guest")#User should be logged in, just in case there is a guest
         comment = request.form.get("comment")
 
         if comment:
-            database.add_comment(product_id=product_id, user=user, comment=comment)
+            database.add_comment(product_id,  session.get("username"), comment)
             flash("Comment added!", "success")
             return redirect(url_for("product_page", product_id=product_id))
 
@@ -287,6 +281,8 @@ def product_page(product_id):
     
 @app.route("/delete_comment/<int:comment_id>", methods=["POST"])
 def delete_comment(comment_id):
+
+    print("DELETING: ", comment_id)
 
     if "username" not in session:
         return jsonify({"Error":"Unauthorized"}), 403
@@ -389,9 +385,9 @@ def cart():
 
 
     for item in cart_items:
-        if "eur" in item["price"]:
-            price = int(item["price"].replace("eur", ""))
-            total_price += price
+        
+        price = float(item["price"].replace("eur", ""))
+        total_price += price
 
     if "total" not in session:
         session["total"] = total_price
@@ -433,7 +429,9 @@ def checkout():
         return redirect(url_for("login"))
     
     #user balance
-    usr_balance = database.get_balance(session["userid"])
+    userid = session["userid"]
+    print(userid)
+    usr_balance = database.get_balance(userid)
 
     cart_items = session.get("cart", [])
     total_price = session.get("total")
@@ -507,16 +505,24 @@ def delete_user(userid):
     return redirect(url_for("admin"))
 
 
+
 #Directory traversal vulnerability
 @app.route('/view')
 def view_file():
     filename = request.args.get("filename")
 
-    try:
-        return send_file(f"static/{filename}")
+
+    if not filename:
+        return "No file specified", 400
+    else:
+        filename = "static/" + filename
     
+    try:
+        with open(filename, "r") as f:
+            content = f.read()
+        return f"<pre>{content}</pre>"
     except Exception as e:
-        return f"Error loading file: {filename}. Error: {str(e)}", 404
+        return f"Error: {e}"
 
 
 

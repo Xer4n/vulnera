@@ -85,12 +85,12 @@
                 {% for comment in comments %}
                     <div class="bg-gray-100 p-3 rounded mb-2 flex justify-between items-center">
                         <div>
-                            <p class="text-gray-700"><strong>{{ comment[0] }}</strong> ({{ comment[2] }})</p>
-                            <p class="text-gray-800">{{ comment[1] | safe }}</p>
+                            <p class="text-gray-700"><strong>{{ comment.user_name }}</strong> ({{ comment.timestamp.strftime('%Y-%m-%d %H:%M' )}})</p>
+                            <p class="text-gray-800">{{ comment.comment | safe }}</p>
                         </div>
-                        {% if session.get("username") == comment[0] or session.get("is_admin") %}
+                        {% if session.get("username") == comment.user_name or session.get("is_admin") %}
                             <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                                    onclick="deleteComment({{ comment[3] }})">
+                                    onclick="deleteComment({{ comment.id }})">
                                 Delete
                             </button>
                         {% endif %}
