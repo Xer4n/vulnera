@@ -388,7 +388,7 @@ def cart():
 
     for item in cart_items:
         
-        price = float(item["price"].replace("eur", ""))
+        price = float(item["price"])
         total_price += price
 
     if "total" not in session:
