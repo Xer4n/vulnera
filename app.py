@@ -513,18 +513,20 @@ def delete_user(userid):
 def view_file():
     filename = request.args.get("filename")
 
-
     if not filename:
         return "No file specified", 400
     else:
         filename = "static/" + filename
     
-    try:
-        with open(filename, "r") as f:
-            content = f.read()
-        return f"<pre>{content}</pre>"
-    except Exception as e:
-        return f"Error: {e}"
+    if ".jpg" or ".png" in filename:
+        return send_file(filename)
+    else:
+        try:
+            with open(filename, "r") as f:
+                content = f.read()
+            return f"<pre>{content}</pre>"
+        except Exception as e:
+            return f"Error: {e}"
 
 
 
