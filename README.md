@@ -21,7 +21,7 @@ Login to PostgreSQL: ``sudo -u postgres psql``\
 Create the database: ``CREATE DATABASE vulneradb;``\
 Change the password of the superuser to allow the application to connect to the user: ``ALTER USER postgres WITH PASSWORD "vulnera";``
 
-Note: You can use your own database user, just remember to change the login information in the ``database.py`` file.
+Note: You can use your own database user, just remember to change the login information in the ``database.py`` file. This allows the complex database exploitation, if you do not want this, setup a normal user in postgres, then change the information in ``database.py``
 
 
 ## Install requirements:
