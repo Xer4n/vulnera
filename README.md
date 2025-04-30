@@ -6,6 +6,7 @@ Vulnera is  a delibratly vulnerable web application for penetration testers to t
 
 - Python 3.8
 - PostgreSQL
+- Git
 
 ## Installation guide
 
