@@ -37,6 +37,6 @@ Using flask server: ``flask run``
 
 Using development server: ``python3 app.py``
 
-On first run, click the !!Init Database!! button in the bottom left to add some products to the database!
+On first run, click the **Init Database** button in the bottom left to add some products to the database!
 
 
