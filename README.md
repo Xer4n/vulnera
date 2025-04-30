@@ -15,8 +15,8 @@ Clone the GitHub repository: ``git clone https://github.com/Xer4n/vulnera.git``
 
 2. Setup the PostgreSQL database with the default super user:
 
-``sudo -u postgres psql``
-``CREATE DATABASE vulneradb;`` 
+``sudo -u postgres psql``\n
+``CREATE DATABASE vulneradb;``\n
 Change the password of the superuser to allow the application to connect to the user: ``ALTER USER postgres WITH PASSWORD "vulnera";``
 
 
