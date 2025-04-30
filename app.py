@@ -18,13 +18,10 @@ database_file = "users.db"
 
 database.initialize_db()
 
-#database.add_product("test", "100", "img/papa.jpg", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
 
 # Set up session configurations
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-
-#database.initialize_db() #calls function from database.py to create the database if it does not exist, if it does then just keep using it
 
 #Git test
 
@@ -491,8 +488,11 @@ def admin():
 
     return render_template("admin.html", users=users, output=output)
     
-@app.route("/delete_user/<int:userid>", methods=["POST"])
-def delete_user(userid):
+@app.route("/delete_user", methods=["POST"])
+def delete_user():
+
+    userid = request.args.get("id")
+    print(userid)
     if not session["is_admin"]:
         flash(f"Access denied")
         return redirect(url_for("home"))
@@ -518,6 +518,7 @@ def view_file():
     else:
         filename = "static/" + filename
     
+    print(filename)
     if ".jpg" or ".png" in filename:
         return send_file(filename)
     else:
@@ -527,7 +528,22 @@ def view_file():
             return f"<pre>{content}</pre>"
         except Exception as e:
             return f"Error: {e}"
+        
 
+@app.route('/init_db')
+def init_db():
+    
+    #products
+    database.add_product("One shoe", "75", "img/shoe.jpg", "One red shoe, would be even better if you had a second one!")
+    database.add_product("Game boy Advanced", "120", "img/gba.jpg", "The good old classic GBA!")
+    database.add_product("Smart Watch", "275", "img/watch.jpg", "Fancy time telling device")
+    database.add_product("Backpack", "50", "img/bag.jpg", "A way for you to store all the items!")
+
+    #comment
+    database.add_comment(1,"admin", "I have the other")
+    database.add_comment(3, "Vulnera", "Enjoy 10% off with the code: 10OFF! Apply the code at checkout!")
+
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
