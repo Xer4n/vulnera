@@ -9,12 +9,12 @@ Vulnera is  a delibratly vulnerable web application for penetration testers to t
 
 ## Installation guide
 
-1. Clone the repository
+#### Clone the repository
 
 Clone the GitHub repository: ``git clone https://github.com/Xer4n/vulnera.git``<br>
 ``cd vulnera``
 
-2. Setup the PostgreSQL database with the default super user:
+#### Setup the PostgreSQL database with the default super user:
 
 Login to PostgreSQL: ``sudo -u postgres psql``\
 Create the database: ``CREATE DATABASE vulneradb;``\
@@ -23,7 +23,7 @@ Change the password of the superuser to allow the application to connect to the 
 Note: You can use your own database user, just remember to change the login information in the ``database.py`` file.
 
 
-3. Install requirements
+#### Install requirements
 
 Enable virtual environment: ``python3 -m venv venv``
 Activate: ``source venv/bin/activate``
@@ -31,6 +31,6 @@ Activate: ``source venv/bin/activate``
 Install requirements: ``pip install -r requirements.txt``
 
 
-5. Run the application
+#### Run the application
 
 
