@@ -11,8 +11,8 @@ Vulnera is  a delibratly vulnerable web application for penetration testers to t
 
 1. Clone the repository
 
-Clone the GitHub repository: ``git clone https://github.com/Xer4n/vulnera.git``\
-``cd vulnera``\
+Clone the GitHub repository: ``git clone https://github.com/Xer4n/vulnera.git``<br>
+``cd vulnera``
 
 2. Setup the PostgreSQL database with the default super user:
 
