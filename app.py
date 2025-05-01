@@ -6,6 +6,8 @@ import hashlib
 import database
 import random
 from math import floor
+from flask_talisman import Talisman
+
 
 
 h = hashlib.new('sha256')
@@ -13,6 +15,23 @@ h = hashlib.new('sha256')
 app = Flask(__name__)
 app.secret_key = "test" # needed for flash
 
+
+#Vulnerble security headers
+csp = {
+    'default-src': ["'self'", '*', 'data:', 'unsafe-inline', 'unsafe-eval'],
+    'script-src': ["'self'", '*', "'unsafe-inline'", "'unsafe-eval'"],
+    'style-src': ["'self'", '*', "'unsafe-inline'"],
+    'img-src': ["'self'", '*', 'data:'],
+    'font-src': ["'self'", '*', 'data:'],
+}
+
+Talisman(
+    app,
+    content_security_policy=csp,
+    frame_options="SAMEORIGIN",
+    x_xss_protection=True,
+    strict_transport_security=False
+)
 
 database_file = "users.db"
 
@@ -22,8 +41,6 @@ database.initialize_db()
 # Set up session configurations
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-
-#Git test
 
 #Routing
 @app.route("/", methods=["GET", "POST"])
@@ -478,22 +495,18 @@ def admin():
             target = request.form.get("target")
 
             try:
-                if platform == "Windows":
-                    output = os.popen(f"ping -c 2 {target}").read()
-                else: #unix systems
-                    output = os.popen(f"ping -c 2 {target}").read()
+                output = os.popen(f"ping -c 2 {target}").read()
             except:
                 output = "Failed."
     
 
     return render_template("admin.html", users=users, output=output)
     
-@app.route("/delete_user", methods=["POST"])
+@app.route("/delete_user", methods=["GET","POST"])
 def delete_user():
 
     userid = request.args.get("id")
-    print(userid)
-    if not session["is_admin"]:
+    if not session.get("is_admin"):
         flash(f"Access denied")
         return redirect(url_for("home"))
 
@@ -518,8 +531,12 @@ def view_file():
     else:
         filename = "static/" + filename
     
-    print(filename)
-    if ".jpg" or ".png" in filename:
+    image_extensions = [".png", '.jpg', ".jpeg", ".gif", ".bmp", ".webp"]
+
+    extension = os.path.splitext(filename)
+
+    print(filename, extension)
+    if extension[1] in image_extensions:
         return send_file(filename)
     else:
         try:

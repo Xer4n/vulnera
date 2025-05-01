@@ -13,6 +13,7 @@ def get_db_connection():
     port="5432"
     )
 
+
     return conn
 
 def initialize_db():
@@ -99,15 +100,16 @@ def delete_user(id):
     """Delete user by id"""
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        conn.autocommit = True # Allowing multiple queries.
+        cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM users WHERE id = %s", (id,))
+        cursor.execute(f"DELETE FROM users WHERE id = {id}")
         conn.commit()
         conn.close()
 
         return True
-    except:
-        print("DEBUG: Error deleting user with id: {id}")
+    except Exception as e: 
+        print(f"DEBUG: Error deleting user with id: {id}", e)
         return False
 
 
