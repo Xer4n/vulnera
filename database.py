@@ -65,6 +65,8 @@ def initialize_db():
         cursor.execute("INSERT INTO users (username, password, is_admin) VALUES (%s, %s, %s)",
                        ("admin", hashed_pw, True))
 
+
+
     conn.commit()
     conn.close()
 
