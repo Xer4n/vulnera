@@ -2,6 +2,8 @@
 
 Vulnera is  a delibratly vulnerable web application for penetration testers to try out and test.
 
+##### All images used in the application are liscenced under free use. 
+
 ## Requirements:
 
 - Python 3.8
