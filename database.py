@@ -198,6 +198,9 @@ def delete_product(product_id):
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
+        #Delete the comments on the product first
+        cursor.execute("DELETE FROM comments WHERE product_id = %s", (product_id,))
+
         # SQL query to delete the product by ID
         cursor.execute("DELETE FROM products WHERE id = %s", (product_id,))
         conn.commit()

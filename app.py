@@ -9,7 +9,6 @@ from math import floor
 from flask_talisman import Talisman
 
 
-
 h = hashlib.new('sha256')
 
 app = Flask(__name__)
@@ -135,8 +134,10 @@ def home():
     return render_template("shop.html", userid=userid, username=username, products=products, is_admin=is_admin)
 
 
-@app.route("/account/<int:userid>")
-def account(userid):
+@app.route("/account")
+def account():
+
+    userid = request.args.get("userid")
 
     session_uid = session.get('userid')
     is_admin = session.get('is_admin', False)
@@ -156,9 +157,10 @@ def account(userid):
     return redirect(url_for("home"))
 
 
-@app.route("/account/<int:userid>/addbalance", methods=["GET", "POST"])
-def add_balance(userid):
+@app.route("/addbalance", methods=["GET", "POST"])
+def add_balance():
     
+    userid = request.args.get("userid")
     conn = database.get_db_connection()
     cursor = conn.cursor()
 
@@ -214,9 +216,10 @@ def add_balance(userid):
         return redirect(url_for("login"))
 
 
-@app.route("/delete/<int:product_id>", methods=["GET", "POST"])
-def delete_product(product_id):
+@app.route("/delete", methods=["GET", "POST"])
+def delete_product():
 
+    product_id = request.args.get("id")
     if "logged_in" not in session or not session.get("is_admin"):
         return jsonify({"error": "Unauthorized"}), 403
 
@@ -264,8 +267,10 @@ def add_product():
 
 
 
-@app.route("/product/<int:product_id>", methods=["GET", "POST"])
-def product_page(product_id):
+@app.route("/product", methods=["GET", "POST"])
+def product_page():
+
+    product_id = request.args.get("id")
 
     product = database.get_product_by_id(product_id=product_id)
     comments = database.get_comments(product_id=product_id)
@@ -288,7 +293,8 @@ def product_page(product_id):
         if comment:
             database.add_comment(product_id,  session.get("username"), comment)
             flash("Comment added!", "success")
-            return redirect(url_for("product_page", product_id=product_id))
+            return redirect(url_for("product_page", id=product_id))
+
 
     if product:
         return render_template('product.html', product=product, comments=comments)
@@ -307,14 +313,18 @@ def delete_comment(comment_id):
     return jsonify({"success": True})
 
 
-@app.route("/changepass/<int:userid>", methods=["GET", "POST"])
-def change_pass(userid):
+@app.route("/changepass", methods=["GET", "POST"])
+def change_pass():
 
+    userid = int(request.args.get("userid"))
+
+    print(userid != session.get("userid"))
     is_admin = session.get("is_admin", False)
     if userid != session.get("userid") or not session.get("logged_in"):
         if is_admin:
             pass
         else:
+            print("test")
             flash("Unauthorized access!", "danger")
             return redirect(url_for("logout"))
     
@@ -373,10 +383,12 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/add_to_cart/<int:product_id>", methods=["POST"])
-def add_to_cart(product_id):
+@app.route("/add_to_cart", methods=["POST"])
+def add_to_cart():
 
+    product_id = request.args.get("id")
 
+    print(type(product_id))
     if "cart" not in session:
         session["cart"] = []
 
@@ -556,9 +568,12 @@ def init_db():
     database.add_product("Smart Watch", "275", "img/watch.jpg", "Fancy time telling device")
     database.add_product("Backpack", "50", "img/bag.jpg", "A way for you to store all the items!")
 
-    #comment
-    database.add_comment(1,"admin", "I have the other")
-    database.add_comment(3, "Vulnera", "Enjoy 10% off with the code: 10OFF! Apply the code at checkout!")
+    #comment - Fetch product id from the products
+
+    products = database.get_all_products()
+    print(products)
+    database.add_comment(products[0]["id"],"admin", "I have the other")
+    database.add_comment(products[2]["id"], "Vulnera", "Enjoy 10% off with the code: 10OFF! Apply the code at checkout!")
 
     return redirect(url_for('login'))
 
