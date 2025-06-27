@@ -35,7 +35,7 @@
             </div>
 
             <div class="mt-6 text-center">
-                <a href="{{ url_for('change_pass', userid=user.id)}}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Change password</a>
+                <a href="/changepass?userid={{user.id}}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Change password</a>
             </div>
 
             <!-- Logout Button -->
@@ -51,7 +51,7 @@
         </div>
 
         <div class="mt-8">
-            <a href="{{ url_for('add_balance', userid=user.id) }}" 
+            <a href="/addbalance?userid={{ user.id }}" 
                class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
                 ➕ Add Balance
             </a>
