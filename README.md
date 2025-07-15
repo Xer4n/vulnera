@@ -1,46 +1,87 @@
-# vulnera
+# 🛡️ **Vulnera**
 
-Vulnera is  a delibratly vulnerable web application for penetration testers to try out and test.
+**Vulnera** is a *deliberately vulnerable* web application designed for penetration testers to practice and test their skills.
 
-> All images used in the application are liscenced under free use. 
+> ⚠️ *All images used in the application are licensed under free use.*
 
-## Requirements:
+---
 
-- Python 3.8
-- PostgreSQL
-- Git
+## 📦 Requirements
 
-## Installation guide
+- **Python** 3.8+
+- **PostgreSQL**
+- **Git**
 
-### Clone the repository:
+---
 
-Clone the GitHub repository: ``git clone https://github.com/Xer4n/vulnera.git``<br>
-``cd vulnera``
+## 🚀 Installation Guide
 
-### Setup the PostgreSQL database with the default super user:
+### 1. Clone the Repository
 
-Login to PostgreSQL: ``sudo -u postgres psql``\
-Create the database: ``CREATE DATABASE vulneradb;``\
-Change the password of the superuser to allow the application to connect to the user: ``ALTER USER postgres WITH PASSWORD "vulnera";``
+```bash
+git clone https://github.com/Xer4n/vulnera.git
+cd vulnera
+```
 
-Note: You can use your own database user, just remember to change the login information in the ``database.py`` file. This allows the complex database exploitation, if you do not want this, setup a normal user in postgres, then change the information in ``database.py``
+---
+
+### 2. Set Up the PostgreSQL Database
+
+```bash
+sudo -u postgres psql
+```
+
+Inside the PostgreSQL shell:
+
+```sql
+CREATE DATABASE vulneradb;
+ALTER USER postgres WITH PASSWORD 'vulnera';
+```
+
+> 💡 **Tip:** You can use your own database user.  
+> Just update the credentials in `database.py`.  
+> This configuration allows for more complex database exploitation scenarios.  
+> For safer use, set up a regular user and adjust `database.py` accordingly.
+
+---
+
+### 3. Install Python Dependencies
+
+Create a virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Install requirements:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
 
 
-## Install requirements:
+### 4. Run the Application
 
-Enable virtual environment: ``python3 -m venv venv``
-Activate: ``source venv/bin/activate``
+You can run the app using either:
 
-Install requirements: ``pip install -r requirements.txt``
+**Flask server:**
 
+```bash
+flask run
+```
 
-### Run the application:
+**Development server:**
 
-Using flask server: ``flask run``
+```bash
+python3 app.py
+```
 
-Using development server: ``python3 app.py``
+> ✅ On first launch, click the **"Init Database"** button in the bottom-left corner to populate the app with sample products.
 
-On first run, click the **Init Database** button in the bottom left to add some products to the database!
+---
 
 # Codes for valuta
 
