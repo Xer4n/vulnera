@@ -11,10 +11,11 @@
 - **Python** 3.8+
 - **PostgreSQL**
 - **Git**
+- **Docker** (optional)
 
 ---
 
-## 🚀 Installation Guide
+## 🚀 Installation Guide - Manual
 
 ### 1. Clone the Repository
 
@@ -38,9 +39,9 @@ CREATE DATABASE vulneradb;
 ALTER USER postgres WITH PASSWORD 'vulnera';
 ```
 
-> 💡 **Tip:** You can use your own database user.  
-> Just update the credentials in `database.py`.  
-> This configuration allows for more complex database exploitation scenarios.  
+> 💡 **Tip:** You can use your own database user.
+> Just update the credentials in `database.py`.
+> This configuration allows for more complex database exploitation scenarios.
 > For safer use, set up a regular user and adjust `database.py` accordingly.
 
 ---
@@ -83,10 +84,35 @@ python3 app.py
 
 ---
 
+## 🐳 Running with Docker (Single Container)
+
+For an easy setup that runs both the **PostgreSQL database** and the **Flask app** in a single container, follow these steps:
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Xer4n/vulnera.git
+cd vulnera
+```
+
+### 2. Build the Docker image
+```bash
+docker build -t vulnera
+```
+> 💡 **Tip:** This command might require administrative priviledges (sudo).
+
+### 3. Run the Docker image
+```bash
+docker run -p 5000:5000 --privileged vulnera
+```
+> ✅ On first launch, click the **"Init Database"** button in the bottom-left corner to populate the app with sample products.
+
+---
+
+
 # Codes for valuta
 
 - xss
 - sqli
 - vulnera
 - csrf
-

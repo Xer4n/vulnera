@@ -1,14 +1,15 @@
 import hashlib
 import psycopg2
+import os
 from psycopg2.extras import RealDictCursor
 
 
 def get_db_connection():
     """Connect to the database and return the connection."""
     conn = psycopg2.connect(
-    dbname = "vulneradb",
-    user="postgres",
-    password="vulnera",
+    dbname = os.getenv("POSTGRES_DB","vulneradb"),
+    user= os.getenv("POSTGRES_USER","postgres"),
+    password=os.getenv("POSTGRES_PASSWORD","vulnera"),
     host="localhost",
     port="5432"
     )
@@ -29,7 +30,7 @@ def initialize_db():
             password VARCHAR(100),
             is_admin BOOLEAN NOT NULL DEFAULT FALSE,
             balance INTEGER NOT NULL DEFAULT 300
-            
+
         )
     """)
 
@@ -108,7 +109,7 @@ def delete_user(id):
         conn.close()
 
         return True
-    except Exception as e: 
+    except Exception as e:
         print(f"DEBUG: Error deleting user with id: {id}", e)
         return False
 
@@ -120,7 +121,7 @@ def set_balance(id, balance):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-   
+
     print(f"Balance for user {id} set to {balance}")
     cursor.execute("UPDATE users SET balance = %s WHERE id = %s", (balance, id,))
     conn.commit()
@@ -142,7 +143,7 @@ def get_balance(id):
         current_balance = 0
         set_balance(id, current_balance)
 
-    
+
     print(f"DEBUG: Balance for user {id}: {current_balance}")
     return current_balance
 
@@ -150,7 +151,7 @@ def add_product(name, price, image, desc):
     """Add a new product to the database."""
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("INSERT INTO products (name, price, image, description) VALUES (%s, %s, %s, %s)", 
+    cursor.execute("INSERT INTO products (name, price, image, description) VALUES (%s, %s, %s, %s)",
                    (name, price, image, desc))
     conn.commit()
     conn.close()
@@ -237,7 +238,7 @@ def change_password(userid, conf_password, new_password):
         cursor.execute("UPDATE users SET password = %s WHERE id = %s", (pass_hash, userid,))
         conn.commit()
 
-    conn.close() 
+    conn.close()
     return True
 
 
@@ -277,7 +278,3 @@ def delete_comment(comment_id):
 
     conn.commit()
     conn.close()
-    
-
-    
-
