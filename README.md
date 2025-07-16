@@ -1,6 +1,13 @@
 # 🛡️ **Vulnera**
 
+## ⚠️ **WARNING:** Do not use this in production or on public networks.
 **Vulnera** is a *deliberately vulnerable* web application designed for penetration testers to practice and test their skills.
+
+- ❌ **DO NOT** expose this application to the internet.
+- ❌ **DO NOT** run it in a production or corporate network.
+- ✅ **DO** run it in a local, isolated, sandboxed, or virtualized environment.
+
+Running vulnera on an exposed or production interface may lead to **real-world security breaches** or **unintended access**.
 
 > ⚠️ *All images used in the application are licensed under free use.*
 
