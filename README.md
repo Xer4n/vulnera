@@ -117,7 +117,9 @@ docker run -p 5000:5000 --privileged vulnera
 ---
 
 
-# Codes for valuta
+## 💰 Codes for valuta
+
+The following codes can be entered in the application to give the user vulnera coins!
 
 - xss
 - sqli
