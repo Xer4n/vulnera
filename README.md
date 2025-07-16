@@ -1,6 +1,6 @@
 # 🛡️ **Vulnera**
 
-## ⚠️ **WARNING:** Do not use this in production or on public networks.
+### ⚠️ **WARNING:** Do not use this in production or on public networks.
 **Vulnera** is a *deliberately vulnerable* web application designed for penetration testers to practice and test their skills.
 
 - ❌ **DO NOT** expose this application to the internet.
