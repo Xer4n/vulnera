@@ -15,10 +15,14 @@ Running vulnera on an exposed or production interface may lead to **real-world s
 
 ## 📦 Requirements
 
+### Manual:
 - **Python** 3.8+
 - **PostgreSQL**
 - **Git**
-- **Docker** (optional)
+
+### Docker:
+- **Git**
+- **Docker**
 
 ---
 
@@ -104,7 +108,7 @@ cd vulnera
 
 ### 2. Build the Docker image
 ```bash
-docker build -t vulnera
+docker build -t vulnera .
 ```
 > 💡 **Tip:** This command might require administrative priviledges (sudo).
 

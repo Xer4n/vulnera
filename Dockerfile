@@ -20,10 +20,10 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 #Copy entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY setup.sh /setup.sh
+RUN chmod +x /setup.sh
 
 #Expose flask port
 EXPOSE 5000
 
-CMD ["/entrypoint.sh"]
+CMD ["/setup.sh"]
