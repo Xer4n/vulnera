@@ -54,7 +54,7 @@ def login():
         password = h.hexdigest()
 
         conn = database.get_db_connection()
-        cursor = conn.cursor()     
+        cursor = conn.cursor()
 
         #VULNERABLE CODE
         query = f"SELECT * FROM users WHERE username = '{username}' AND password ='{password}'"
@@ -62,7 +62,7 @@ def login():
         user = cursor.fetchone()
         print(user)
 
-        
+
         conn.close()
 
         if user:
@@ -81,7 +81,7 @@ def login():
             return redirect(url_for("home"))
         else:
             flash("Invalid username or password", "danger")
-                          
+
     return render_template("index.html")
 
 
@@ -89,12 +89,12 @@ def login():
 def register():
 
     h = hashlib.new('sha256')
-    
+
     if request.method == "POST":
-    
+
         username = request.form.get("username")
         password = request.form.get("password")
-        
+
 
         conn = database.get_db_connection()
         cursor = conn.cursor()
@@ -111,8 +111,8 @@ def register():
             flash("Something went wrong, please try again!", "danger")
         finally:
             conn.close()
-        
-    
+
+
     return render_template("register.html")
 
 @app.route("/home")
@@ -120,7 +120,7 @@ def home():
     if not session.get("logged_in"):
         flash("Please log in.", "danger")
         return redirect(url_for("login"))
-    
+
 
     userid = session.get("userid")
     username = session.get("username", "Guest")
@@ -146,11 +146,11 @@ def account():
             pass
         else:
             return redirect(url_for("home"))
-        
+
 
 
     user = database.get_user_by_id(userid)
-    
+
 
     if user:
         return render_template("account.html", user=user)
@@ -159,7 +159,7 @@ def account():
 
 @app.route("/addbalance", methods=["GET", "POST"])
 def add_balance():
-    
+
     userid = request.args.get("userid")
     conn = database.get_db_connection()
     cursor = conn.cursor()
@@ -170,7 +170,7 @@ def add_balance():
 
         user_token = request.form.get("csrf_token")
         session_token = session.get("csrf_token")
-       
+
 
         if user_token != session_token:
             flash(f"Invalid CSRF token detected!", "danger")
@@ -200,7 +200,7 @@ def add_balance():
 
         else:
             flash("Invalid code, try again.", "danger")
-        
+
 
     #Fetch user
     cursor.execute("SELECT username, balance FROM users WHERE id = %s", (userid,))
@@ -231,16 +231,16 @@ def delete_product():
         return jsonify({"success": True, "message": "Product deleted successfully!"}), 200
     else:
         return jsonify({"error": "Error deleting product."}), 500
-    
+
 
 @app.route("/add_product", methods=["GET", "POST"])
 def add_product():
     if not session.get("is_admin"):
         flash("Access denied!", "danger")
         return redirect(url_for("home"))
-    
+
     if request.method == "POST":
-        
+
         name = request.form.get("name")
         desc = request.form.get("desc")
         price = int(request.form.get("price"))
@@ -260,10 +260,10 @@ def add_product():
 
         flash("Product added successfully")
         return redirect(url_for("home"))
-    
+
     return render_template("addproduct.html")
 
-    
+
 
 
 
@@ -300,7 +300,7 @@ def product_page():
         return render_template('product.html', product=product, comments=comments)
     else:
         return render_template('404.html'), 404
-    
+
 @app.route("/delete_comment/<int:comment_id>", methods=["POST"])
 def delete_comment(comment_id):
 
@@ -308,7 +308,7 @@ def delete_comment(comment_id):
 
     if "username" not in session:
         return jsonify({"Error":"Unauthorized"}), 403
-    
+
     database.delete_comment(comment_id=comment_id)
     return jsonify({"success": True})
 
@@ -327,7 +327,7 @@ def change_pass():
             print("test")
             flash("Unauthorized access!", "danger")
             return redirect(url_for("logout"))
-    
+
     if request.method == "POST":
 
         print(f"DEBUG: Request to change password for user with id: {userid}")
@@ -346,7 +346,7 @@ def change_pass():
         new_pass = request.form.get("new_password")
 
         print(f"Request details:  {user_token}, {new_pass}, {conf_pass}")
-        
+
         valid = database.change_password(userid, conf_password=conf_pass, new_password=new_pass)
 
 
@@ -360,15 +360,15 @@ def change_pass():
                 session['_flashes'] = flashes
 
             return redirect(url_for("login"))
-            
-    
+
+
         flash("Passwords, do not match", "danger")
         return redirect(url_for("account", userid=userid))
-    
+
 
     return render_template("change_password.html", userid=userid)
 
-    
+
 
 
 
@@ -395,7 +395,7 @@ def add_to_cart():
 
     product = database.get_product_by_id(product_id=product_id)
 
-    
+
     if product:
         session["cart"].append({"id": product["id"], "name": product["name"], "price": product["price"]})
         session.modified = True
@@ -413,7 +413,7 @@ def cart():
 
 
     for item in cart_items:
-        
+
         price = float(item["price"])
         total_price += price
 
@@ -450,12 +450,12 @@ def remove_from_cart(product_id):
 
 @app.route("/checkout", methods=["GET", "POST"])
 def checkout():
-    
+
     #Check that user is logged in.
     if "username" not in session:
         flash("Please log in", "danger")
         return redirect(url_for("login"))
-    
+
     #user balance
     userid = session["userid"]
     print(userid)
@@ -465,7 +465,7 @@ def checkout():
     total_price = session.get("total")
 
 
-    
+
 
     if request.method == "POST":
 
@@ -481,14 +481,14 @@ def checkout():
         else:
             new_balance = usr_balance - total_price
             database.set_balance(session["userid"], new_balance)
-            
+
             session["cart"] =  []
 
             flash("Checkout complete! Thanks for your purchase!", "success")
 
-    
+
         return redirect(url_for("home"))
-    
+
     return render_template("checkout.html", cart=cart_items, total_price=total_price, balance=usr_balance)
 
 
@@ -497,7 +497,7 @@ def admin():
     if not session.get("is_admin"):
         flash("Access denied")
         return redirect("/")
-    
+
     users = database.get_all_users()
 
     output = ""
@@ -510,10 +510,10 @@ def admin():
                 output = os.popen(f"ping -c 2 {target}").read()
             except:
                 output = "Failed."
-    
+
 
     return render_template("admin.html", users=users, output=output)
-    
+
 @app.route("/delete_user", methods=["GET","POST"])
 def delete_user():
 
@@ -523,7 +523,7 @@ def delete_user():
         return redirect(url_for("home"))
 
 
-    
+
     if database.delete_user(userid) and userid != 1:
         flash(f"User with id: {userid} has been deleted!", "success")
     else:
@@ -542,7 +542,7 @@ def view_file():
         return "No file specified", 400
     else:
         filename = "static/" + filename
-    
+
     image_extensions = [".png", '.jpg', ".jpeg", ".gif", ".bmp", ".webp"]
 
     extension = os.path.splitext(filename)
@@ -557,11 +557,11 @@ def view_file():
             return f"<pre>{content}</pre>"
         except Exception as e:
             return f"Error: {e}"
-        
+
 
 @app.route('/init_db')
 def init_db():
-    
+
     #products
     database.add_product("One shoe", "75", "img/shoe.jpg", "One red shoe, would be even better if you had a second one!")
     database.add_product("Game boy Advanced", "120", "img/gba.jpg", "The good old classic GBA!")
