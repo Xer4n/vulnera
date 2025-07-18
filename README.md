@@ -120,6 +120,10 @@ docker run -p 5000:5000 --privileged vulnera
 
 ---
 
+## 🖥 Accessing the application
+
+1. Open your browser
+2. Head to ``127.0.0.1:5000`` or ``locahost:5000``
 
 ## 💰 Codes for valuta
 
