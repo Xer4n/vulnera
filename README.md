@@ -91,7 +91,7 @@ flask run
 python3 app.py
 ```
 
-> ✅ On first launch, click the **"Init Database"** button in the bottom-left corner to populate the app with sample products.
+> ✅ On first launch, click the **"Init Database"** button in the bottom-right corner to populate the app with sample products.
 
 ---
 
@@ -116,15 +116,20 @@ docker build -t vulnera .
 ```bash
 docker run -p 5000:5000 --privileged vulnera
 ```
-> ✅ On first launch, click the **"Init Database"** button in the bottom-left corner to populate the app with sample products.
+> ✅ On first launch, click the **"Init Database"** button in the bottom-right corner to populate the app with sample products.
 
 ---
 
 ## 🖥 Accessing the application
 
-1. Open your browser
-2. Head to ``127.0.0.1:5000`` or ``locahost:5000``
+Once the application is running (either manually or via Docker):
 
+1. Open your web browser
+2. Navigate to ``127.0.0.1:5000`` or ``locahost:5000``
+
+>  ⚠️ **Important:** Ensure that you're accessing the app from a local and isolated environment. **Do not** expose port ``5000`` to public networks or shared systems.
+
+> ✅ On first launch, click the **"Init Database"** button in the bottom-right corner to populate the app with sample products.
 ## 💰 Codes for valuta
 
 The following codes can be entered in the application to give the user vulnera coins!
