@@ -91,8 +91,6 @@ flask run
 python3 app.py
 ```
 
-> ✅ On first launch, click the **"Init Database"** button in the bottom-right corner to populate the app with sample products.
-
 ---
 
 ## 🐳 Running with Docker (Single Container)
@@ -116,7 +114,6 @@ docker build -t vulnera .
 ```bash
 docker run -p 5000:5000 --privileged vulnera
 ```
-> ✅ On first launch, click the **"Init Database"** button in the bottom-right corner to populate the app with sample products.
 
 ---
 
