@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 #Install required dependencies
 RUN apt-get update && apt-get install -y \
-    postgresql  postgresql-contrib libpq-dev curl && \
+    postgresql  postgresql-contrib libpq-dev curl iputils-ping && \
     rm -fr /var/lib/apt/lists*
 
 # Environment variables
